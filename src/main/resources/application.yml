@@ -20,6 +20,26 @@ spring:
 
 
 
+  cloud:
+    aws:
+      credentials:
+        access-key: ${AWS_ACCESS_KEY_ID}
+        secret-key: ${AWS_SECRET_ACCESS_KEY}
+      s3:
+        bucket: ${AWS_BUCKET}
+      region:
+        static: ap-northeast-2
+      stack:
+        auto: false
+
+
+
+PSP:
+  toss:
+    secretKey: ${TOSS_SECRET_KEY}
+    url: https://api.tosspayments.com
+
+
 
 com:
   test:
