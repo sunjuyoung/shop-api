@@ -20,6 +20,7 @@ spring:
 
 
 
+
   cloud:
     aws:
       credentials:
@@ -49,3 +50,4 @@ com:
 logging:
   level:
     org.hibernate.SQL: debug
+    org.springframework.cache: trace

@@ -15,6 +15,7 @@ import com.project.shop.product.repository.ProductRepository;
 import com.project.shop.product.vo.ProductSearchCondition;
 import com.project.shop.util.CustomS3Util;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -137,10 +138,12 @@ public class ProductService {
         return product;
     }
 
+
     public List<ProductListDTO> getNewProductList() {
         return productRepository.newProductList();
     }
 
+    @Cacheable(cacheNames = "getNewProductList", key = "'trendProduct'", cacheManager = "productListCacheManager")
     public List<ProductListDTO> getTrendProductList() {
         return  productRepository.trendProductList();
     }
