@@ -20,7 +20,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class TokenController {
     private final RedisTemplate<String, String> redisTemplate;
-    private static final String REFRESH_TOKEN_PREFIX = "refreshToken_";
+    private static final String REFRESH_TOKEN_PREFIX = "refreshToken:";
 
     private static final int ACCESS_TOKEN_EXPIRATION = 60*60*12;
     private static final int REFRESH_TOKEN_EXPIRATION = 60* 60* 12;
@@ -60,12 +60,12 @@ public class TokenController {
 
         //refreshToken 기간이 60분 이하로 남았을 경우 새로운 refreshToken을 발급
         //아닐 경우 기존 refreshToken을 사용한다
-        String newReToken;
-        if(checkTime((Integer)claims.get("exp"))){
-            newReToken=  jwtProvider.generateToken(claims,REFRESH_TOKEN_EXPIRATION);
-        }else {
-            newReToken = redisRefreshToken;
-        }
+        String newReToken= jwtProvider.generateToken(claims,REFRESH_TOKEN_EXPIRATION);
+//        if(redisRefreshToken == null && checkTime((Integer)claims.get("exp"))){
+//            newReToken=  jwtProvider.generateToken(claims,REFRESH_TOKEN_EXPIRATION);
+//        }else {
+//            newReToken = redisRefreshToken;
+//        }
 
         return Map.of("accessToken",newAccessToken,"refreshToken",newReToken);
     }

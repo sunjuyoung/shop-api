@@ -34,4 +34,9 @@ public interface PaymentEventRepository extends JpaRepository<PaymentEvent,Long>
                                         @Param("type") PaymentType type,
                                         @Param("pspRawData") String pspRawData);
 
+    @Query("select pe.id as payment_event_id, pe.paymentKey, pe.orderKey, po.id as payment_order_id, po.paymentOrderStatus, po.amount ,po.failedCount,po.threshold " +
+            " from  PaymentEvent pe join pe.paymentOrders po " +
+            " where po.paymentOrderStatus = 'EXECUTING' and  po.updatedAt <= :thresholdTime")
+    Optional<PaymentEvent> getPendingPaymentEvent(@Param("thresholdTime") LocalDateTime thresholdTime);
+
 }

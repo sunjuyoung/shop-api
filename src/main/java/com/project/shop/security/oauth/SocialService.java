@@ -2,6 +2,7 @@ package com.project.shop.security.oauth;
 
 import com.project.shop.customer.dto.AuthDTO;
 import com.project.shop.customer.entity.Customer;
+import com.project.shop.customer.entity.enums.Grade;
 import com.project.shop.customer.entity.enums.Roles;
 import com.project.shop.customer.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
@@ -107,9 +108,9 @@ public class SocialService {
             return authDTO;
         }
         //기존 회원이 아니라면
-        Customer member = makeSocialMember(email);
-        customerRepository.save(member);
-        AuthDTO memberDTO = entityToDTO(member);
+        Customer customer = makeSocialMember(email);
+        customerRepository.save(customer);
+        AuthDTO memberDTO = entityToDTO(customer);
         return memberDTO;
     }
 
@@ -132,6 +133,7 @@ public class SocialService {
         Customer customer =  Customer.builder()
                 .email(email)
                 .password(tempPw)
+                .grade(Grade.BRONZE)
                 .nickname(nickname)
                 .isSocial(true)
                 .build();

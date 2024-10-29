@@ -55,7 +55,11 @@ public class ProductRepositoryImpl implements CustomProductRepository{
 
         JPAQuery<Long> countQuery = queryFactory.select(product.count())
                 .from(product)
-                .where(nameEq(condition.getKeyword()))
+                .where(
+                        nameEq(condition.getKeyword()),
+                        categoryEq(condition.getCategoryId()),
+                        priceRange(condition.getPriceRange())
+                )
                 ;
 
         return PageableExecutionUtils.getPage(productListDTOList, pageable, countQuery::fetchOne);
@@ -111,11 +115,8 @@ public class ProductRepositoryImpl implements CustomProductRepository{
                         nameEq(condition.getKeyword()),
                         categoryEq(condition.getCategoryId()),
                         priceRange(condition.getPriceRange())
-
                 );
-
         orderByPrice(condition,fetch);
-
         return fetch.fetch();
     }
 

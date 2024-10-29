@@ -48,6 +48,8 @@ public class PaymentOrder extends BaseTime {
     private Product product;
 
 
+    private int failedCount;
+    private int threshold;
 
 
     public void setPaymentEvent(PaymentEvent paymentEvent) {

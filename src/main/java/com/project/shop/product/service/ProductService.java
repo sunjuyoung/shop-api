@@ -64,8 +64,6 @@ public class ProductService {
 
         imagesRepository.deleteAllByIdInBatch(ids);
 
-
-
         List<MultipartFile> files = modifyDTO.getFiles();
         List<String> strings = customS3Util.saveFiles(files);
         modifyDTO.setUploadFileNames(strings);
@@ -85,7 +83,7 @@ public class ProductService {
 
 
 
-    @Scheduled(fixedRate = 600000) //10분마다
+    @Scheduled(fixedRate = 590000) //10분마다
     @Transactional
     public void updateViewCounts() {
         Map<Long, Long> viewCounts = productViewCountService.getAndResetViewCounts();
@@ -102,7 +100,6 @@ public class ProductService {
 
     @Transactional
     public Long createProduct(ProductCreateDTO dto) {
-
         Product product = dtoToEntity(dto);
         Product save = productRepository.save(product);
 
@@ -110,11 +107,8 @@ public class ProductService {
     }
 
     private Product dtoToEntity(ProductCreateDTO productDTO){
-
         Category category = categoryRepository.findById(productDTO.getCategoryId())
                 .orElseThrow(() ->  new NotFoundCategory(ExceptionCode.NOT_FOUND_CATEGORY));
-
-
 
         Product product = Product.builder()
                 .name(productDTO.getName())

@@ -22,8 +22,6 @@ public class SocialController {
 
     @GetMapping("/auth/member/naver")
     public Map<String, Object> getCustomerFromNaver(@RequestParam("code") String code){
-        log.info("getCustomerFromNaver");
-        log.info(code);
         AuthDTO authDTO = socialService.getNaverMember(code);
         Map<String, Object> claims = getClaims(authDTO);
         return claims;
@@ -35,7 +33,7 @@ public class SocialController {
 
         String jwtAccessToken = jwtProvider.generateToken(claims, 10);
         String jwtRefreshToken = jwtProvider.generateToken(claims, 60 * 12);
-
+        jwtProvider.refreshTokenSave(jwtRefreshToken,googleMember.getId().toString());
        // redisTemplate.opsForValue().set(googleMember.getEmail(), jwtRefreshToken, Duration.ofMinutes(60 * 12));
 
         claims.put("accessToken", jwtAccessToken);

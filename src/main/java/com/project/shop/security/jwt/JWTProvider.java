@@ -30,7 +30,7 @@ public class JWTProvider {
 
     private final RedisTemplate<String, String> redisTemplate;
     private static final long TOKEN_EXPIRATION_HOURS = 12L;
-    private static final String REFRESH_TOKEN_PREFIX = "refreshToken_";
+    private static final String REFRESH_TOKEN_PREFIX = "refreshToken:";
 
 
     // 토큰 생성

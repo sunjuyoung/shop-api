@@ -60,4 +60,8 @@ public class Customer {
         this.password = password;
     }
 
+    public void changeSocial(boolean social) {
+        this.isSocial = social;
+    }
+
 }

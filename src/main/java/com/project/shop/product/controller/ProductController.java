@@ -31,10 +31,6 @@ public class ProductController {
 
     @GetMapping
     public ResponseEntity<Page<ProductListDTO>> getProductList(ProductSearchCondition condition, Pageable pageable) {
-        log.info("===============");
-        log.info(condition.getCategoryId().toString());
-        log.info(condition.getOrderBy());
-     //   log.info(condition.getPriceRange().toString());
         Page<ProductListDTO> result = productService.searchProductListPage(condition, pageable);
         return ResponseEntity.ok(result);
     }

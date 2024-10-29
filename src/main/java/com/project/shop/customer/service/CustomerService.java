@@ -34,6 +34,9 @@ public class CustomerService {
         Customer customer = customerRepository.findById(passwordChangeDTO.getId())
                 .orElseThrow(() -> new UsernameNotFoundException("해당유저를 찾을 수 없습니다."));
         customer.changePassword(passwordEncoder.encode(passwordChangeDTO.getNewPassword()));
+        if(customer.isSocial()){
+            customer.changeSocial(false);
+        }
         return customer.getId();
 
     }
