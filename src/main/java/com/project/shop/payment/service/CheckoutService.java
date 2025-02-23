@@ -29,6 +29,7 @@ public class CheckoutService {
 
     public Long checkout(CheckoutRequest request){
 
+        
         Order order = orderRepository.findOrderWithOrderItemAndProductById(request.getOrderId());
 
         PaymentEvent paymentEvent = createPaymentEvent(order, request);

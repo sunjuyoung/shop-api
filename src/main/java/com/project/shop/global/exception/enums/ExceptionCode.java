@@ -39,6 +39,12 @@ public enum ExceptionCode {
     NOT_FOUND_PRODUCT(400,"CA-001","상품을 찾을 수 없습니다."),
 
 
+    //comment
+    ALREADY_DELETED_COMMENT(400,"C-001","이미 삭제된 댓글입니다."),
+
+    //like
+    ALREADY_LIKE(400,"L-001","이미 좋아요를 누른 상품입니다."),
+    NOT_FOUND_LIKE(400,"L-002","좋아요를 찾을 수 없습니다."),
 
     //product
     NOT_ENOUGH_STOCK(400,"P-001","해당 상품의 재고가 부족합니다."),

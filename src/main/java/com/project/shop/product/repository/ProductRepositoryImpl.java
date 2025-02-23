@@ -59,8 +59,7 @@ public class ProductRepositoryImpl implements CustomProductRepository{
                         nameEq(condition.getKeyword()),
                         categoryEq(condition.getCategoryId()),
                         priceRange(condition.getPriceRange())
-                )
-                ;
+                );
 
         return PageableExecutionUtils.getPage(productListDTOList, pageable, countQuery::fetchOne);
 

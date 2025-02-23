@@ -72,4 +72,18 @@ public class GlobalExceptionHandler {
         final ErrorResponse response = ErrorResponse.of(ex.getExceptionCode());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(NotFoundLike.class)
+    public ResponseEntity<ErrorResponse> NotFoundLike(NotFoundLike ex) {
+        log.error("---NotFoundLike---");
+        final ErrorResponse response = ErrorResponse.of(ex.getExceptionCode());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(CommentAlreadyDeletedException.class)
+    public ResponseEntity<ErrorResponse> CommentAlreadyDeletedException(CommentAlreadyDeletedException ex) {
+        log.error("---CommentAlreadyDeletedException---");
+        final ErrorResponse response = ErrorResponse.of(ex.getExceptionCode());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
 }

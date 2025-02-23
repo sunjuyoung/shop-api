@@ -3,6 +3,7 @@ package com.project.shop.customer.entity;
 import com.project.shop.customer.entity.enums.Grade;
 import com.project.shop.customer.entity.enums.Roles;
 import com.project.shop.customer.vo.Address;
+import com.project.shop.global.domain.BaseTime;
 import com.project.shop.global.domain.Images;
 import jakarta.persistence.*;
 import lombok.*;
@@ -16,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "customer")
-public class Customer {
+public class Customer extends BaseTime {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -46,6 +47,20 @@ public class Customer {
     private List<Roles> roleList = new ArrayList<>();
 
     private String profileImagePath;
+
+
+    public static Customer createCustomer(String email, String password, String nickname, String phoneNumber, Grade grade, List<Roles> roleList){
+        Customer customer = new Customer();
+        customer.email = email;
+        customer.password = password;
+        customer.nickname = nickname;
+        customer.phoneNumber = phoneNumber;
+        customer.grade = grade;
+        customer.roleList = roleList;
+        return customer;
+    }
+
+
 
     public void changeGrade(Grade grade){
         this.grade = grade;

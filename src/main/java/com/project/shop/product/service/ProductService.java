@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -103,6 +104,7 @@ public class ProductService {
         Product product = dtoToEntity(dto);
         Product save = productRepository.save(product);
 
+
         return save.getId();
     }
 
@@ -137,6 +139,10 @@ public class ProductService {
         return productRepository.newProductList();
     }
 
+    //cache aside전략으로 캐싱잉전략
+    // 해당 메서드로 요청이 들어오면 레디스를 확인한후 데이터가있으면 반환하고 없으면 DB에서 데이터를 가져와서 레디스에 저장
+    // key 값 변수 사용가능
+    //@Cacheable(cacheNames = "getNewProductList", key = "'newProduct:' + #page  + 'size' + #size", cacheManager = "productListCacheManager")
     @Cacheable(cacheNames = "getNewProductList", key = "'trendProduct'", cacheManager = "productListCacheManager")
     public List<ProductListDTO> getTrendProductList() {
         return  productRepository.trendProductList();

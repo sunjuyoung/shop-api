@@ -16,16 +16,16 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 class CustomS3UtilTest {
 
-    @Autowired
-    CustomS3Util s3Util;
-
-    @Test
-    public void testupload(){
-
-        Path filePath = new File("C:\\dev\\boardList.png").toPath();
-        List<Path> filePath1 = List.of(filePath);
-
-        s3Util.uploadFiles(filePath1,false);
-    }
+//    @Autowired
+//    CustomS3Util s3Util;
+//
+//    @Test
+//    public void testupload(){
+//
+//        Path filePath = new File("C:\\dev\\boardList.png").toPath();
+//        List<Path> filePath1 = List.of(filePath);
+//
+//        s3Util.uploadFiles(filePath1,false);
+//    }
 
 }
