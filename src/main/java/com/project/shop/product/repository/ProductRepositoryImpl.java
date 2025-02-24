@@ -1,9 +1,11 @@
 package com.project.shop.product.repository;
 
 import com.project.shop.category.entity.QCategory;
+import com.project.shop.comment.entity.QProductCommentCount;
 import com.project.shop.global.domain.QImages;
 import com.project.shop.global.exception.ProductNotFoundException;
 import com.project.shop.global.exception.enums.ExceptionCode;
+import com.project.shop.like.entity.QProductLikeCount;
 import com.project.shop.product.dto.response.*;
 import com.project.shop.product.entity.Product;
 import com.project.shop.product.entity.QProduct;
@@ -14,6 +16,7 @@ import com.querydsl.core.group.Group;
 import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.PathBuilder;
@@ -26,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -33,8 +37,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.project.shop.category.entity.QCategory.*;
+import static com.project.shop.comment.entity.QProductCommentCount.*;
 import static com.project.shop.global.domain.QImages.*;
+import static com.project.shop.like.entity.QProductLikeCount.*;
 import static com.project.shop.product.entity.QProduct.*;
+import static com.querydsl.core.group.GroupBy.set;
 
 public class ProductRepositoryImpl implements CustomProductRepository{
 
@@ -63,7 +70,23 @@ public class ProductRepositoryImpl implements CustomProductRepository{
 
         return PageableExecutionUtils.getPage(productListDTOList, pageable, countQuery::fetchOne);
 
-       // return null;
+    }
+    @Override
+    public Page<ProductListDTO> searchProductListPagev2(ProductSearchCondition condition, Pageable pageable) {
+
+        List<ProductListDTO> productListDTOJPAQueryV2 = getProductListDTOJPAQueryV2(condition, pageable);
+
+
+        JPAQuery<Long> countQuery = queryFactory.select(product.count())
+                .from(product)
+                .where(
+                        nameEq(condition.getKeyword()),
+                        categoryEq(condition.getCategoryId()),
+                        priceRange(condition.getPriceRange())
+                );
+
+        return PageableExecutionUtils.getPage(productListDTOJPAQueryV2, pageable, countQuery::fetchOne);
+
     }
 
     @Override
@@ -108,6 +131,7 @@ public class ProductRepositoryImpl implements CustomProductRepository{
                 .from(product)
                 .innerJoin(product.category, category).fetchJoin()
                 .leftJoin(product.productImages, images).fetchJoin()
+
                 .limit(pageable.getPageSize())
                 .offset(pageable.getOffset())
                 .where(
@@ -116,7 +140,44 @@ public class ProductRepositoryImpl implements CustomProductRepository{
                         priceRange(condition.getPriceRange())
                 );
         orderByPrice(condition,fetch);
+
         return fetch.fetch();
+    }
+
+
+
+    private  List<ProductListDTO> getProductListDTOJPAQueryV2(ProductSearchCondition condition, Pageable pageable) {
+        JPAQuery<ProductListDTO> query = queryFactory
+                .select(
+                        Projections.constructor(ProductListDTO.class,
+                                product.id,
+                                product.name,
+                                product.price,
+                                product.discountRate,
+                                product.description,
+                                images.fileName,
+                                productCommentCount.commentCount,
+                                productLikeCount.likeCount,
+                                category.name,
+                                category.id
+                        )
+                )
+                .from(product)
+                .innerJoin(product.category, category)
+                .leftJoin(product.productImages, images)
+                .leftJoin(productLikeCount).on(product.id.eq(productLikeCount.productId))
+                .leftJoin(productCommentCount).on(product.id.eq(productCommentCount.productId))
+                .limit(pageable.getPageSize())
+                .offset(pageable.getOffset())
+                .where(
+                        nameEq(condition.getKeyword()),
+                        categoryEq(condition.getCategoryId()),
+                        priceRange(condition.getPriceRange())
+                );
+        orderByPricev2(condition,query);
+
+        return query.fetch();
+
     }
 
 
@@ -181,7 +242,24 @@ public class ProductRepositoryImpl implements CustomProductRepository{
         }
     }
 
-
+    private static void orderByPricev2(ProductSearchCondition condition, JPAQuery<ProductListDTO> query) {
+        if (StringUtils.hasText(condition.getOrderBy())) {
+            switch (condition.getOrderBy()) {
+                case "PRICE_HIGH":
+                    query.orderBy(product.price.desc());
+                    break;
+                case "PRICE_LOW":
+                    query.orderBy(product.price.asc());
+                    break;
+                case "NEW":
+                    query.orderBy(product.updatedAt.desc());
+                    break;
+                case "BASIC":
+                    query.orderBy(product.id.asc());
+                    break;
+            }
+        }
+    }
     private BooleanExpression nameEq(String keyword) {
         return StringUtils.hasText(keyword) ? product.name.contains(keyword) : null;
     }

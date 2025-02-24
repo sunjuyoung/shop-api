@@ -17,6 +17,9 @@ public interface CustomProductRepository {
     public List<ProductListDTO> newProductList();
 
     public Page<ProductListDTO> searchProductListPage(ProductSearchCondition condition, Pageable pageable);
+    public Page<ProductListDTO> searchProductListPagev2(ProductSearchCondition condition, Pageable pageable);
+
+
 
     public ProductViewDTO getProductView(Long productId);
 

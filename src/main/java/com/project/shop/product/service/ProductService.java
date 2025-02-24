@@ -15,10 +15,13 @@ import com.project.shop.product.repository.ProductRepository;
 import com.project.shop.product.vo.ProductSearchCondition;
 import com.project.shop.util.CustomS3Util;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,29 +31,27 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class ProductService {
 
     private final ProductRepository productRepository;
-    private final ProductViewCountService productViewCountService;
-
     private final CategoryRepository categoryRepository;
-
     private final ImagesRepository imagesRepository;
-
     private final CustomS3Util customS3Util;
+    private final ProductViewService productViewService;
+
 
     public Page<ProductListDTO> searchProductListPage(ProductSearchCondition condition, Pageable pageable) {
-        return productRepository.searchProductListPage(condition, pageable);
+        return productRepository.searchProductListPagev2(condition, pageable);
     }
 
     public ProductViewDTO getProductView(Long productId) {
         ProductViewDTO productView = productRepository.getProductView(productId);
-        if(productView != null){
-            productViewCountService.incrementViewCountAsync(productId);
-        }
+        Long increase = productViewService.increase(productId);
+        log.info("increase : {}", increase);
         return productView;
     }
 
@@ -84,19 +85,19 @@ public class ProductService {
 
 
 
-    @Scheduled(fixedRate = 590000) //10분마다
-    @Transactional
-    public void updateViewCounts() {
-        Map<Long, Long> viewCounts = productViewCountService.getAndResetViewCounts();
-        if(viewCounts.isEmpty()){
-            return;
-        }
-        for (Map.Entry<Long, Long> entry : viewCounts.entrySet()) {
-            Long itemId = entry.getKey();
-            Long count = entry.getValue();
-            productRepository.incrementViewCountBatch(itemId, count);
-        }
-    }
+//    @Scheduled(fixedRate = 590000) //10분마다
+//    @Transactional
+//    public void updateViewCounts() {
+//        Map<Long, Long> viewCounts = productViewCountService.getAndResetViewCounts();
+//        if(viewCounts.isEmpty()){
+//            return;
+//        }
+//        for (Map.Entry<Long, Long> entry : viewCounts.entrySet()) {
+//            Long itemId = entry.getKey();
+//            Long count = entry.getValue();
+//            productRepository.incrementViewCountBatch(itemId, count);
+//        }
+//    }
 
 
     @Transactional

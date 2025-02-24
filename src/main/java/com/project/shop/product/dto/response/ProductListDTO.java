@@ -22,19 +22,27 @@ public class ProductListDTO {
     private BigDecimal price;
     private int discountRate;
     private String description;
-    private List<String> mainImage;
-
+    private List<String> fileName;
+    private Long commentCount;
+    private Long likeCount;
     private String categoryName;
     private Long categoryId;
+    private String mainImgUrl;
 
-    @QueryProjection
-    public ProductListDTO(Long id, String name, BigDecimal price, int discountRate, String description,List<String> mainImage) {
+
+
+    public ProductListDTO(Long id, String name, BigDecimal price, int discountRate, String description,
+                          String fileName, Long commentCount, Long likeCount, String categoryName, Long categoryId) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.discountRate = discountRate;
         this.description = description;
-        this.mainImage = mainImage;
+        this.mainImgUrl = fileName;
+        this.commentCount = commentCount;
+        this.likeCount = likeCount;
+        this.categoryName = categoryName;
+        this.categoryId = categoryId;
     }
 
     public ProductListDTO(Product product) {
@@ -47,7 +55,7 @@ public class ProductListDTO {
 //        this.viewCount = product.getViewCount();
 //        this.mdRecommended = product.isMdRecommended();
 //        this.categoryName = product.getCategory().getName();
-        this.mainImage = product.getProductImages().stream()
+        this.fileName = product.getProductImages().stream()
                 .map(Images::getFileName)
                 .collect(Collectors.toList());
 

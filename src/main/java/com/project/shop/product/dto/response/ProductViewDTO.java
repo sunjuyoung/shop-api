@@ -24,9 +24,6 @@ public class ProductViewDTO {
     private List<ProductImagesDTO> productImages;
 
 
-
-
-
     public ProductViewDTO() {
     }
 
