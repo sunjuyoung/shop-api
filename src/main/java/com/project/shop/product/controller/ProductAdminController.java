@@ -6,14 +6,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
-@RequiredArgsConstructor
-@RequestMapping("/admin/products")
+//@RestController
+//@RequiredArgsConstructor
+//@RequestMapping("/admin/products")
 public class ProductAdminController {
 
 
-    @PostMapping("/create")
-    public void createProduct(ProductCreateDTO productCreateDTO) {
-    }
 
 }

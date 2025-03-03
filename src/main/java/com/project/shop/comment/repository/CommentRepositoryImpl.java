@@ -1,7 +1,6 @@
 package com.project.shop.comment.repository;
 
 import com.project.shop.comment.entity.Comment;
-import com.project.shop.comment.entity.QComment;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 

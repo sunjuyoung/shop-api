@@ -1,21 +1,14 @@
 package com.project.shop.cartItem.repository;
 
-import com.project.shop.cart.entity.QCart;
 import com.project.shop.cartItem.dto.response.CartItemListDTO;
-import com.project.shop.cartItem.dto.response.QCartItemListDTO;
 import com.project.shop.cartItem.entity.CartItem;
-import com.project.shop.cartItem.entity.QCartItem;
-import com.project.shop.global.domain.QImages;
-import com.project.shop.product.dto.response.ProductListDTO;
-import com.project.shop.product.entity.QProduct;
+
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.project.shop.cart.entity.QCart.*;
 import static com.project.shop.cartItem.entity.QCartItem.*;
@@ -39,6 +32,7 @@ public class CartItemRepositoryImpl implements CustomCartItemRepository{
     public List<CartItemListDTO> getCartItemsById(Long userId) {
      //   JPAQuery<CartItemListDTO> cartItemList = getCartItemList();
 
+
         List<CartItemListDTO> fetch = queryFactory.select(
                         Projections.constructor(
                                 CartItemListDTO.class,
@@ -58,6 +52,7 @@ public class CartItemRepositoryImpl implements CustomCartItemRepository{
                 .where(cart.customer.id.eq(userId))
                 .groupBy(cart, product, cartItem)
                 .fetch();
+
 
         // List<CartItemListDTO> collect = fetch.stream().map(CartItemListDTO::new).collect(Collectors.toList());
 
@@ -155,24 +150,24 @@ public class CartItemRepositoryImpl implements CustomCartItemRepository{
         return fetch;
     }
 
-    private  JPAQuery<CartItemListDTO> getCartItemList() {
-         return queryFactory.select(new QCartItemListDTO(
-                                cartItem.id,
-                                product.id,
-                                product.name,
-                                product.price,
-                                product.quantity,
-                                images.fileUrl
-
-                        )
-
-
-                )
-                .from(cartItem)
-                .innerJoin(cartItem.cart, cart)
-                .leftJoin(cartItem.product, product)
-                .leftJoin(product.productImages, images);
-    }
+//    private  JPAQuery<CartItemListDTO> getCartItemList() {
+//         return queryFactory.select(new QCartItemListDTO(
+//                                cartItem.id,
+//                                product.id,
+//                                product.name,
+//                                product.price,
+//                                product.quantity,
+//                                images.fileUrl
+//
+//                        )
+//
+//
+//                )
+//                .from(cartItem)
+//                .innerJoin(cartItem.cart, cart)
+//                .leftJoin(cartItem.product, product)
+//                .leftJoin(product.productImages, images);
+//    }
 
 
 }

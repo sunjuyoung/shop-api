@@ -1,9 +1,6 @@
 package com.project.shop.order.repository;
 
 import com.project.shop.order.entity.Order;
-import com.project.shop.order.entity.QOrder;
-import com.project.shop.orderItem.entity.QOrderItem;
-import com.project.shop.product.entity.QProduct;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 

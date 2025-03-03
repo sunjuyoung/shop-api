@@ -5,6 +5,7 @@ import com.project.shop.product.dto.request.ProductModifyDTO;
 import com.project.shop.product.dto.response.ProductListDTO;
 import com.project.shop.product.dto.response.ProductViewDTO;
 import com.project.shop.product.service.ProductService;
+import com.project.shop.product.service.ProductViewService;
 import com.project.shop.product.vo.ProductSearchCondition;
 import com.project.shop.util.CustomS3Util;
 import jakarta.validation.Valid;
@@ -28,6 +29,7 @@ public class ProductController {
 
     private final ProductService productService;
     private final CustomS3Util customS3Util;
+    private final ProductViewService productViewService;
 
     @GetMapping
     public ResponseEntity<Page<ProductListDTO>> getProductList(ProductSearchCondition condition, Pageable pageable) {
@@ -75,10 +77,13 @@ public class ProductController {
         dto.setProductId(productId);
         Long aLong = productService.modifyProduct(dto);
 
-
         return ResponseEntity.ok().body(new ProductModifyResponse("success",aLong));
+    }
 
-
+    @GetMapping("/view/{productId}")
+    public ResponseEntity<Long> viewCount(@PathVariable("productId") Long productId){
+        Long count = productViewService.count(productId);
+        return ResponseEntity.ok(count);
     }
 
 

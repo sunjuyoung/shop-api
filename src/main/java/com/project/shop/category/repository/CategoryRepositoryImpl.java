@@ -1,7 +1,6 @@
 package com.project.shop.category.repository;
 
 import com.project.shop.category.entity.Category;
-import com.project.shop.category.entity.QCategory;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 

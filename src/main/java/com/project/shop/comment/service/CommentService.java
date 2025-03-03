@@ -7,6 +7,9 @@ import com.project.shop.comment.repository.ProductCommentCountRepository;
 import com.project.shop.comment.service.request.CommentCreateRequest;
 import com.project.shop.comment.service.response.CommentPageResponse;
 import com.project.shop.comment.service.response.CommentResponse;
+import com.project.shop.common.event.EventType;
+import com.project.shop.common.event.payload.CommentCreatedEventPayload;
+import com.project.shop.common.outboxmessagerelay.OutboxEventPublisher;
 import com.project.shop.customer.entity.Customer;
 import com.project.shop.customer.repository.CustomerRepository;
 import com.project.shop.global.exception.CommentAlreadyDeletedException;
@@ -36,6 +39,8 @@ public class CommentService {
 
     private final ProductCommentCountRepository productCommentCountRepository;
 
+    private final OutboxEventPublisher outboxEventPublisher;
+
     /**
      * 댓글 생성
      * @param request
@@ -62,6 +67,23 @@ public class CommentService {
         if(result==0){
             productCommentCountRepository.save(ProductCommentCount.init(request.getProductId(), 1L));
         }
+        outboxEventPublisher.publish(
+                EventType.COMMENT_CREATED,
+                CommentCreatedEventPayload.builder()
+                        .commentId(saveComment.getId())
+                        .productId(request.getProductId())
+                        .productCommentCount(count(request.getProductId()))
+                        .createdAt(saveComment.getCreatedAt())
+                        .deleted(saveComment.getDeleted())
+                        .content(saveComment.getContent())
+                        .customerId(customer.getId())
+                        .build()
+                    , product.getId()
+
+        );
+
+
+
         return saveComment.getId();
     }
 
@@ -95,6 +117,12 @@ public class CommentService {
         return CommentPageResponse.from(list, count);
     }
 
+    public Long count(Long productId){
+        return productCommentCountRepository.findById(productId)
+                .map(ProductCommentCount::getCommentCount)
+                .orElse(0L);
+    }
+
 
     @Transactional
     public void delete(Long commentId) {
@@ -103,6 +131,21 @@ public class CommentService {
                 .ifPresent((comment) -> {
                     comment.delete();
                     productCommentCountRepository.decrease(comment.getProduct().getId());
+
+                    outboxEventPublisher.publish(
+                            EventType.COMMENT_DELETED,
+                            CommentCreatedEventPayload.builder()
+                                    .commentId(comment.getId())
+                                    .productId(comment.getProduct().getId())
+                                    .productCommentCount(comment.getParentCommentId())
+                                    .createdAt(comment.getCreatedAt())
+                                    .deleted(comment.getDeleted())
+                                    .content(comment.getContent())
+                                    .customerId(comment.getCustomer().getId())
+                                    .build()
+                            , comment.getProduct().getId()
+
+                    );
                 });
 
     }

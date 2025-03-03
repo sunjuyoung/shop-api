@@ -1,14 +1,9 @@
 package com.project.shop.product.repository;
 
-import com.project.shop.category.entity.QCategory;
-import com.project.shop.comment.entity.QProductCommentCount;
-import com.project.shop.global.domain.QImages;
 import com.project.shop.global.exception.ProductNotFoundException;
 import com.project.shop.global.exception.enums.ExceptionCode;
-import com.project.shop.like.entity.QProductLikeCount;
 import com.project.shop.product.dto.response.*;
 import com.project.shop.product.entity.Product;
-import com.project.shop.product.entity.QProduct;
 import com.project.shop.product.vo.ProductSearchCondition;
 import com.project.shop.product.vo.enums.PriceRange;
 import com.querydsl.core.Tuple;
@@ -41,7 +36,6 @@ import static com.project.shop.comment.entity.QProductCommentCount.*;
 import static com.project.shop.global.domain.QImages.*;
 import static com.project.shop.like.entity.QProductLikeCount.*;
 import static com.project.shop.product.entity.QProduct.*;
-import static com.querydsl.core.group.GroupBy.set;
 
 public class ProductRepositoryImpl implements CustomProductRepository{
 
@@ -100,7 +94,8 @@ public class ProductRepositoryImpl implements CustomProductRepository{
                         product.quantity,
                         product.viewCount,
                 category.id,
-                category.name
+                category.name,
+                product.createdAt
                 ))
                 .from(product)
                 .join(product.category, category)

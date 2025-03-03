@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -23,13 +24,17 @@ public class ProductViewDTO {
 
     private List<ProductImagesDTO> productImages;
 
+    private LocalDateTime createdAt;
+
+
 
     public ProductViewDTO() {
     }
 
 
     @QueryProjection
-    public ProductViewDTO(Long id, String name, String description, BigDecimal price, int stockQuantity, int viewCount, Long categoryId, String categoryName) {
+    public ProductViewDTO(Long id, String name, String description, BigDecimal price,
+                          int stockQuantity, int viewCount, Long categoryId, String categoryName, LocalDateTime createdAt) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -38,6 +43,7 @@ public class ProductViewDTO {
         this.viewCount = viewCount;
         this.categoryId = categoryId;
         this.categoryName = categoryName;
+        this.createdAt = createdAt;
     }
 
 //    @QueryProjection

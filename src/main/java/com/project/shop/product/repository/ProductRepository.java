@@ -18,7 +18,6 @@ public interface ProductRepository extends JpaRepository<Product, Long>, CustomP
     void incrementViewCount(@Param("id") Long id);
 
     @Modifying
-    @Transactional
     @Query("UPDATE Product p SET p.viewCount = p.viewCount + :count WHERE p.id = :id")
     void incrementViewCountBatch(@Param("id") Long id, @Param("count") Long count);
 

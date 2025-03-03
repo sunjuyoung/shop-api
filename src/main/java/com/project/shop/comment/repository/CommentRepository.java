@@ -28,7 +28,7 @@ public interface CommentRepository extends JpaRepository<Comment,Long>, CustomCo
             @Param("limit") Long limit
     );
 
-    @EntityGraph(attributePaths = {"product"})
+    @EntityGraph(attributePaths = {"product","customer"})
     @Query("select c from Comment c where c.id = :commentId")
     Optional<Comment> findCommentWithProductById(Long commentId);
 

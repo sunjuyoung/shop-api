@@ -51,7 +51,7 @@ public class ProductService {
     public ProductViewDTO getProductView(Long productId) {
         ProductViewDTO productView = productRepository.getProductView(productId);
         Long increase = productViewService.increase(productId);
-        log.info("increase : {}", increase);
+        //log.info("increase : {}", increase);
         return productView;
     }
 

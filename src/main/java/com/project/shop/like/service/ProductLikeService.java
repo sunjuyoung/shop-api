@@ -1,5 +1,9 @@
 package com.project.shop.like.service;
 
+import com.project.shop.common.event.EventType;
+import com.project.shop.common.event.payload.ProductLikedEventPayload;
+import com.project.shop.common.event.payload.ProductUnLikedEventPayload;
+import com.project.shop.common.outboxmessagerelay.OutboxEventPublisher;
 import com.project.shop.customer.entity.Customer;
 import com.project.shop.customer.repository.CustomerRepository;
 import com.project.shop.global.exception.NotFoundLike;
@@ -31,6 +35,8 @@ public class ProductLikeService {
 
     private final ProductLikeCountRepository productLikeCountRepository;
 
+    private final OutboxEventPublisher outboxEventPublisher;
+
     public ProductLikeResponse read(Long productId, Long customerId){
         return productLikeRepository.findByUserIdAndProductId(customerId, productId)
                 .map(ProductLikeResponse::create)
@@ -48,10 +54,24 @@ public class ProductLikeService {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new IllegalArgumentException("customer not found"));
         // 👍 좋아요 정보 저장
-        productLikeRepository.save(ProductLike.create(product, customer));
+        ProductLike productLike = productLikeRepository.save(ProductLike.create(product, customer));
 
         // 👍 카운트 증가  ,낙관적 락 3번 재시도 200ms 간격
         increaseLikeCount(productId);
+
+        // 👍 좋아요 이벤트 발행
+        outboxEventPublisher.publish(
+                EventType.PRODUCT_LIKED,
+                ProductLikedEventPayload.builder()
+                        .productId(productId)
+                        .customerId(customerId)
+                        .productLikeId(productLike.getId())
+                        .productLikeCount(count(productId))
+                        .createdAt(productLike.getCreatedAt())
+                        .build(),
+                productId
+
+        );
     }
 
     @Transactional
@@ -77,6 +97,20 @@ public class ProductLikeService {
                     ProductLikeCount productLikeCount = productLikeCountRepository.findById(productId)
                             .orElseThrow();
                     productLikeCount.decrease();
+
+
+                    outboxEventPublisher.publish(
+                            EventType.PRODUCT_UNLIKED,
+                            ProductUnLikedEventPayload.builder()
+                                    .productId(productId)
+                                    .customerId(customerId)
+                                    .productLikeId(productLike.getId())
+                                    .productLikeCount(count(productId))
+                                    .createdAt(productLike.getCreatedAt())
+                                    .build(),
+                            productId
+
+                    );
                 });
 
     }

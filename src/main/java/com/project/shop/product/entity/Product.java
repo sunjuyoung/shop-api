@@ -43,7 +43,7 @@ public class Product extends BaseTime {
     @Column(nullable = false)
     private int quantity;
 
-
+    //제거
     @Column(name = "view_count")
     private int viewCount;
 
