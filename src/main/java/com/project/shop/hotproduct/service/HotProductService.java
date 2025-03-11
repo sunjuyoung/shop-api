@@ -32,6 +32,8 @@ public class HotProductService {
             log.error("Unsupported event={}", event);
             return;
         }
+
+
             hotProductScoreUpdater.update(event,eventHandler);
 
     }

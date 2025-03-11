@@ -21,10 +21,10 @@ public class HotProductScoreCalculator {
     private static final long PRODUCT_COMMENT_COUNT_WEIGHT = 2;
     private static final long PRODUCT_VIEW_COUNT_WEIGHT = 1;
 
-    public long calculate(Long articleId) {
-        Long likeCount = productLikeCountRepository.read(articleId);
-        Long viewCount = productViewCountRepository.read(articleId);
-        Long commentCount = productCommentCountRepository.read(articleId);
+    public long calculate(Long productId) {
+        Long likeCount = productLikeCountRepository.read(productId);
+        Long viewCount = productViewCountRepository.read(productId);
+        Long commentCount = productCommentCountRepository.read(productId);
 
         return likeCount * PRODUCT_LIKE_COUNT_WEIGHT
                 + viewCount * PRODUCT_VIEW_COUNT_WEIGHT

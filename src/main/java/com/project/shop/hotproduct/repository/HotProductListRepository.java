@@ -32,6 +32,7 @@ public class HotProductListRepository {
                 .executePipelined((RedisCallback<?>) action->{
                     StringRedisConnection conn = (StringRedisConnection) action;
                     String key = generateKey(time);
+
                     conn.zAdd(key, score, String.valueOf(productId)); //sorted set에 productId를 score로 추가
                     conn.zRemRange(key, 0, - limit - 1); //상위 limit개수 이상의 데이터는 삭제
                     conn.expire(key, ttl.toSeconds()); //ttl 지정
@@ -56,11 +57,11 @@ public class HotProductListRepository {
 
     public List<Long> readAll(String dateStr) {
         String key = generateKey(dateStr);
-        return redisTemplate.opsForZSet().reverseRangeWithScores(key, 0, -1)
-                .stream()
+        return redisTemplate.opsForZSet()
+                .reverseRangeWithScores(key, 0, -1).stream()
                 .peek(tuple -> log.info("productId={}, score={}", tuple.getValue(), tuple.getScore()))
                 .map(ZSetOperations.TypedTuple::getValue)
-                .map(Long::parseLong)
+                .map(Long::valueOf)
                 .toList();
     }
 }

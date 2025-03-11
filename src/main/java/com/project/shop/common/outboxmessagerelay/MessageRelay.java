@@ -30,7 +30,7 @@ public class MessageRelay {
         outboxRepository.save(outboxEvent.getOutbox());
     }
 
-    //비동기로 카프카로 이벤트 전송
+    //비동기로 카프카로 이벤트 발행
     @Async("messageRelayPublishExecutor")//MessageRelayConfig.java의 Executor Bean
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)//트랜잭션 커밋완료 후 이벤트 발행은 비동기로
     public void publishEvent(OutboxEvent outboxEvent) {

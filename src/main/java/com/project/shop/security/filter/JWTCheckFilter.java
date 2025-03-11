@@ -21,39 +21,25 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @RequiredArgsConstructor
 public class JWTCheckFilter extends OncePerRequestFilter {
 
-
     private ObjectMapper objectMapper = new ObjectMapper();
     private final JWTProvider jwtProvider;
+
+
+    private static final Set<String> EXCLUDED_PATHS = Set.of(
+            "/auth/", "/token/", "/products", "/categories", "/payments","/hot-products"
+    );
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
 
-        if(path.startsWith("/auth/")){
-            return true;
-        }
-
-        if(path.startsWith("/token/")){
-            return true;
-        }
-
-        if(path.startsWith("/products")){
-            return true;
-        }
-
-        if(path.startsWith("/categories")){
-            return true;
-        }
-
-        if(path.startsWith("/payments")){
-            return true;
-        }
-
-        return false;
+        return EXCLUDED_PATHS.stream().anyMatch(path::startsWith);
     }
 
     @Override

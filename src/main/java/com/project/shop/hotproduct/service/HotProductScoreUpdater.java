@@ -2,6 +2,7 @@ package com.project.shop.hotproduct.service;
 
 import com.project.shop.common.event.Event;
 import com.project.shop.common.event.EventPayload;
+import com.project.shop.common.event.EventType;
 import com.project.shop.hotproduct.repository.HotProductListRepository;
 import com.project.shop.hotproduct.repository.ProductCreatedTimeCache;
 import com.project.shop.hotproduct.service.eventhandler.EventHandler;
@@ -20,7 +21,7 @@ public class HotProductScoreUpdater {
     private final ProductCreatedTimeCache productCreatedTimeRepository;
 
     private static final long HOT_PRODUCT_COUNT = 10;
-    private static final Duration HOT_PRODUCT_TTL = Duration.ofDays(7);
+    private static final Duration HOT_PRODUCT_TTL = Duration.ofDays(2);
 
 
     public void update(Event<EventPayload> event, EventHandler<EventPayload> eventHandler) {
@@ -35,6 +36,8 @@ public class HotProductScoreUpdater {
 //        }
 
         eventHandler.handle(event);
+
+
 
         //점수 계산
         long score = hotProductScoreCalculator.calculate(productId);

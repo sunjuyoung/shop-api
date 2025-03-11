@@ -15,7 +15,7 @@ public class HotProductController {
 
     private final HotProductService hotProductService;
 
-    @GetMapping("/v1/hot-products/date/{dateStr}")
+    @GetMapping("/hot-products/date/{dateStr}")
     public List<HotProductResponse> readAll(@PathVariable("dateStr") String dateStr){
         return hotProductService.readAll(dateStr);
 
