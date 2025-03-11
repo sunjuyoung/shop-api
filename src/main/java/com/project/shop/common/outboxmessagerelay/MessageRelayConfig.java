@@ -46,8 +46,8 @@ public class MessageRelayConfig {
     }
 
     //미전송 이벤트
-    @Bean
-    public Executor messageRelaypublishPendingExecutor() {
-        return Executors.newSingleThreadScheduledExecutor();
-    }
+//    @Bean
+//    public Executor messageRelaypublishPendingExecutor() {
+//        return Executors.newSingleThreadScheduledExecutor();
+//    }
 }

@@ -15,19 +15,19 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class HotProductEventConsumer {
 
-    private final HotProductService hotProductService;
-
-    @KafkaListener(topics = {
-            EventType.Topic.PRODUCT_COMMENT,
-            EventType.Topic.PRODUCT_LIKE,
-            EventType.Topic.PRODUCT_VIEW
-    })
-    public void listen(String message, Acknowledgment ack) {
-        log.info("hotproductconsumer message={}", message);
-        Event<EventPayload> event = Event.fromJson(message);
-        if(event != null){
-            hotProductService.handleEvent(event);
-        }
-        ack.acknowledge();
-    }
+//    private final HotProductService hotProductService;
+//
+//    @KafkaListener(topics = {
+//            EventType.Topic.PRODUCT_COMMENT,
+//            EventType.Topic.PRODUCT_LIKE,
+//            EventType.Topic.PRODUCT_VIEW
+//    })
+//    public void listen(String message, Acknowledgment ack) {
+//        log.info("hotproductconsumer message={}", message);
+//        Event<EventPayload> event = Event.fromJson(message);
+//        if(event != null){
+//            hotProductService.handleEvent(event);
+//        }
+//        ack.acknowledge();
+//    }
 }

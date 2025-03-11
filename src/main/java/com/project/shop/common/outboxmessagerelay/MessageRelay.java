@@ -1,5 +1,9 @@
 package com.project.shop.common.outboxmessagerelay;
 
+import com.project.shop.common.event.Event;
+import com.project.shop.common.event.EventPayload;
+import com.project.shop.hotproduct.service.HotProductScoreUpdater;
+import com.project.shop.hotproduct.service.eventhandler.EventHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -18,52 +22,79 @@ import java.util.concurrent.TimeUnit;
 @Component
 @RequiredArgsConstructor
 public class MessageRelay {
-    private final OutboxRepository outboxRepository;
 
-    //카프카로 이벤트 전송
-    private final KafkaTemplate<String, String> messageRelayKafkaTemplate;
+
+    private final List<EventHandler> eventHandlers;
+    private final HotProductScoreUpdater hotProductScoreUpdater;
+//    private final OutboxRepository outboxRepository;
+//
+//    //카프카로 이벤트 전송
+//    private final KafkaTemplate<String, String> messageRelayKafkaTemplate;
 
     //트랜잭션 이벤트 발생시 outbox에 저장
-    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
-    public void createOutbox(OutboxEvent outboxEvent) {
-        log.info("[MessageRelay.createOutbox] outboxEvent={}", outboxEvent);
-        outboxRepository.save(outboxEvent.getOutbox());
-    }
+//    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+//    public void createOutbox(OutboxEvent outboxEvent) {
+//        log.info("[MessageRelay.createOutbox] outboxEvent={}", outboxEvent);
+//        outboxRepository.save(outboxEvent.getOutbox());
+//    }
 
     //비동기로 카프카로 이벤트 발행
+//    @Async("messageRelayPublishExecutor")//MessageRelayConfig.java의 Executor Bean
+//    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)//트랜잭션 커밋완료 (정상완료)후 이벤트 발행은 비동기로
+//    public void publishEvent(OutboxEvent outboxEvent) {
+//        publishEvent(outboxEvent.getOutbox());
+//    }
+
     @Async("messageRelayPublishExecutor")//MessageRelayConfig.java의 Executor Bean
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)//트랜잭션 커밋완료 후 이벤트 발행은 비동기로
-    public void publishEvent(OutboxEvent outboxEvent) {
-        publishEvent(outboxEvent.getOutbox());
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)//트랜잭션 커밋완료 (정상완료)후 이벤트 발행은 비동기로
+    public void publishEvent(Event<EventPayload> event) {
+        EventHandler<EventPayload> eventHandler = findEventHandler(event);
+        if(eventHandler == null){
+            log.error("Unsupported event={}", event);
+            return;
+        }
+
+        hotProductScoreUpdater.update(event,eventHandler);
     }
 
-    private void publishEvent(Outbox outbox) {
-        try {
-            messageRelayKafkaTemplate.send(
-                    outbox.getEventType().getTopic(),
-                    String.valueOf(outbox.getShardKey()),
-                    outbox.getPayload()
-            ).get(1, TimeUnit.SECONDS);//get() 메서드로 전송완료까지 대기
-            outboxRepository.delete(outbox);
-        } catch (Exception e) {
-            log.error("[MessageRelay.publishEvent] outbox={}", outbox, e);
-        }
+    private EventHandler<EventPayload> findEventHandler(Event<EventPayload> event) {
+        return eventHandlers.stream()
+                .filter(eventHandler -> eventHandler.supports(event))
+                .findAny()
+                .orElse(null)
+                ;
     }
+
+
+
+ //   private void publishEvent(Outbox outbox) {
+//        try {
+//            messageRelayKafkaTemplate.send(
+//                    outbox.getEventType().getTopic(),
+//                    String.valueOf(outbox.getShardKey()),
+//                    outbox.getPayload()
+//            ).get(1, TimeUnit.SECONDS);//get() 메서드로 전송완료까지 대기
+//            outboxRepository.delete(outbox);
+//        } catch (Exception e) {
+//            log.error("[MessageRelay.publishEvent] outbox={}", outbox, e);
+//        }
+
+
 
     //outbox데이터베이스 남아있는 미전송 이벤트 10초마다 주기적으로 polling 후 전송
-    @Scheduled(
-            fixedDelay = 30,
-            initialDelay = 5,
-            timeUnit = TimeUnit.SECONDS,
-            scheduler = "messageRelaypublishPendingExecutor" //MessageRelayConfig.java의 Executor Bean 싱글스레드
-    )
-    public void publishPendingEvent() {
-            List<Outbox> outboxes = outboxRepository.findAllByCreatedAtLessThanEqualOrderByCreatedAtAsc(
-                    LocalDateTime.now().minusSeconds(10),
-                    Pageable.ofSize(100)
-            );
-            for (Outbox outbox : outboxes) {
-                publishEvent(outbox);
-        }
-    }
+//    @Scheduled(
+//            fixedDelay = 30,
+//            initialDelay = 5,
+//            timeUnit = TimeUnit.SECONDS,
+//            scheduler = "messageRelaypublishPendingExecutor" //MessageRelayConfig.java의 Executor Bean 싱글스레드
+//    )
+//    public void publishPendingEvent() {
+//            List<Outbox> outboxes = outboxRepository.findAllByCreatedAtLessThanEqualOrderByCreatedAtAsc(
+//                    LocalDateTime.now().minusSeconds(10),
+//                    Pageable.ofSize(100)
+//            );
+//            for (Outbox outbox : outboxes) {
+//                publishEvent(outbox);
+//        }
+//    }
 }

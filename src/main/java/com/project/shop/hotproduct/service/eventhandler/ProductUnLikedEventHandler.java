@@ -2,11 +2,14 @@ package com.project.shop.hotproduct.service.eventhandler;
 
 import com.project.shop.common.event.Event;
 import com.project.shop.common.event.EventType;
+import com.project.shop.common.event.payload.ProductLikedEventPayload;
 import com.project.shop.common.event.payload.ProductUnLikedEventPayload;
 import com.project.shop.hotproduct.repository.ProductLikeCountCache;
 import com.project.shop.hotproduct.utils.TimeCalculatorUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
@@ -32,4 +35,8 @@ public class ProductUnLikedEventHandler implements EventHandler<ProductUnLikedEv
     public Long findProductId(Event<ProductUnLikedEventPayload> event) {
         return event.getPayload().getProductId();
     }
+
+
+
+
 }

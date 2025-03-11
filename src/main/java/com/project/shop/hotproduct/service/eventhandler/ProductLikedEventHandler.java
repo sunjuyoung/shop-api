@@ -8,6 +8,8 @@ import com.project.shop.hotproduct.utils.TimeCalculatorUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 @Component
 @RequiredArgsConstructor
 public class ProductLikedEventHandler implements EventHandler<ProductLikedEventPayload> {
@@ -35,4 +37,6 @@ public class ProductLikedEventHandler implements EventHandler<ProductLikedEventP
     public Long findProductId(Event<ProductLikedEventPayload> event) {
         return event.getPayload().getProductId();
     }
+
+
 }

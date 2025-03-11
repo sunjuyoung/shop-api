@@ -53,4 +53,8 @@ public class HotProductScoreUpdater {
         );
     }
 
+    private boolean isArticleCreatedToday(LocalDateTime createdAt) {
+        return createdAt.isAfter(LocalDateTime.now().minusMonths(2)); // 2달 전까지의 데이터만 유효
+    }
+
 }
