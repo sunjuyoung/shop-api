@@ -24,16 +24,18 @@ public class CheckoutService {
 
     private final OrderRepository orderRepository;
     private final PaymentEventRepository paymentEventRepository;
+    private static final String TEST_ORDER_KEY = "_testNumber";
 
 
 
     public Long checkout(CheckoutRequest request){
 
-        
+        //주문, 상품들 조회
         Order order = orderRepository.findOrderWithOrderItemAndProductById(request.getOrderId());
 
         PaymentEvent paymentEvent = createPaymentEvent(order, request);
 
+        //CascadeType.ALL로 인해 PaymentEvent 저장시 PaymentOrder도 같이 저장
         PaymentEvent newPaymentEvent = paymentEventRepository.save(paymentEvent);
 
         return newPaymentEvent.getId();
@@ -43,27 +45,36 @@ public class CheckoutService {
 
     private PaymentEvent createPaymentEvent(Order order, CheckoutRequest request){
 
+        //PaymentEvent 생성
         PaymentEvent paymentEvent = PaymentEvent.builder()
                 .order(order)
-                .orderKey(request.getOrderId() + "_testNumber")
+                .orderKey(request.getOrderId() + TEST_ORDER_KEY)
                 .orderName(request.getOrderName())
                 .totalAmount(request.getAmount())
                 .build();
 
-        List<PaymentOrder> paymentOrders = order.getOrderItems().stream().map(o -> {
-            PaymentOrder build = PaymentOrder.builder()
-                    .product(o.getProduct())
-                    .orderKey(request.getOrderId() + "_testNumber")
-                    .amount(o.getAmounts())
-                    .paymentOrderStatus(PaymentOrderStatus.NOT_STARTED)
-                    .build();
-            return build;
-        }).collect(Collectors.toList());
+        //PaymentOrder 생성
+        List<PaymentOrder> paymentOrders = createPaymentOrders(order, request);
 
+
+        //PaymentEvent에 PaymentOrder 추가
         paymentOrders.forEach(paymentOrder -> {
             paymentEvent.addPaymentOrder(paymentOrder);
         });
+
         return paymentEvent;
 
+    }
+
+    private static List<PaymentOrder> createPaymentOrders(Order order, CheckoutRequest request) {
+
+        return order.getOrderItems().stream()
+                .map(o -> PaymentOrder.builder()
+                        .product(o.getProduct())
+                        .orderKey(request.getOrderId() + TEST_ORDER_KEY)
+                        .amount(o.getAmounts())
+                        .paymentOrderStatus(PaymentOrderStatus.NOT_STARTED)
+                        .build())
+                .collect(Collectors.toList());
     }
 }

@@ -32,7 +32,7 @@ public class PaymentOrder extends BaseTime {
     private String orderKey;
 
     @Enumerated(EnumType.STRING)
-    private PaymentOrderStatus paymentOrderStatus;
+    private PaymentOrderStatus paymentOrderStatus; //not_started, executing, success, failure
 
 
     private boolean isLedgerUpdated;
@@ -48,8 +48,10 @@ public class PaymentOrder extends BaseTime {
     private Product product;
 
 
-    private int failedCount;
-    private int threshold;
+
+
+    private int failedCount; //실패 횟수
+    private int threshold; //실패 임계치
 
 
     public void setPaymentEvent(PaymentEvent paymentEvent) {

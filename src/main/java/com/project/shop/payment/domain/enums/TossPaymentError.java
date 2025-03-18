@@ -86,6 +86,8 @@ public enum TossPaymentError {
 
 
 
+    //재시도 가능한 에러인지 확인
+    //성공하지 않았고, 실패 원인이 재시도로 해결될 수 있는 에러인지 확인
     public boolean isRetryableError(){
         return !isSuccess() && !isFailure();
     }

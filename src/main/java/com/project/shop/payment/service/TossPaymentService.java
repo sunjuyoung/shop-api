@@ -74,8 +74,9 @@ public class TossPaymentService {
                 }).retryWhen(Retry.backoff(2, Duration.ofSeconds(1))
                         .jitter(0.5)
                         .filter(throwable -> throwable instanceof PSPConfirmationException&&((PSPConfirmationException) throwable).isRetryableError())
+                     //   .doBeforeRetry(retrySignal -> log.info("retry count : {}", retrySignal.totalRetries()))
                         .onRetryExhaustedThrow((retryBackoffSpec, retrySignal) ->
-                                // 재시도 후에도 실패하면 실패로 처리
+                                // 재시도 후에도 실패하면 customException아닌 그대로 에러를 던진다.
                                 retrySignal.failure()
                         )
                 )

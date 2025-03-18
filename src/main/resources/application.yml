@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 9090
 
 
 
@@ -8,7 +8,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3777/shop
     username: root
-    password: rnrdj123
+    password:
 
 
   data:

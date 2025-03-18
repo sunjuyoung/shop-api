@@ -16,6 +16,7 @@ import com.project.shop.payment.vo.PaymentStatusUpdateCommand;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -23,10 +24,19 @@ import java.util.List;
 
 @Slf4j
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class PaymentConfirmService {
 
+    //## 결제 승인 기능
+    //결제 창에서 결제 정보를 입력하고 인증한 후에 결제서버측에서 psp로 결제 승인을 보내는 과정
+    //
+    //1. 유저가 결제 승인요청
+    //2. Payment 의 상태를 NOT_STARTED EXECUTING 상태로 변경
+    //   (장애로 인해 결제가 실패할경우  EXECUTING (인증이완료) 은 복구서비스 통해서 완료시도)
+    //4. 결제에 대한 유효성 검사 . (e.g 금액 등 )
+    //5. PSP 에 결제 승인을 요청한다 .
+    //6. PSP 결제 승인 결과에 따라서 결제 완료 / 실패 상태를 저장
+    //7.  결제 승인 결과를 사용자에게 전달한다 .
 
     private final PaymentEventRepository paymentEventRepository;
     private final TossPaymentService tossPaymentService;
@@ -35,22 +45,26 @@ public class PaymentConfirmService {
 
     private final PaymentOrderRepository paymentOrderRepository;
 
+    //private final PaymentOrderStatusService paymentOrderStatusService;
 
-    public PaymentConfirmResult confirm(PaymentConfirmCommand command){
+    @Transactional
+    public PaymentConfirmResult confirm(PaymentEvent paymentEvent, PaymentConfirmCommand command) {
 
-        PaymentEvent paymentEvent = paymentEventRepository.findAllByOrderKey(command.getOrderId()).orElseThrow();
-        List<PaymentOrder> paymentOrders = paymentEvent.getPaymentOrders();
+    //    PaymentEvent paymentEvent = paymentEventRepository.findAllByOrderKey(command.getOrderId()).orElseThrow();
+    //    List<PaymentOrder> paymentOrders = paymentEvent.getPaymentOrders();
+
         //PaymentOrderStatus 변경 NOT_STARTED -> EXECUTING
-        updatePaymentOrderStatus(paymentOrders);
+        //가장 먼저 EXECUTING 상태 변경을 통해 , 장애 발생시 복구 서비스를 통해 결제를 완료할 수 있도록 한다.
+       // paymentOrderStatusService.updatePaymentOrderStatus(paymentOrders);
 
-        paymentEventRepository.updatePaymentKeyByOrderId(command.getPaymentKey(), command.getOrderId());
+        //paymentKey 업데이트
+      //  paymentEventRepository.updatePaymentKeyByOrderId(command.getPaymentKey(), command.getOrderId());
 
-
+        //결제 금액 검증
         isAmountValid(command, paymentEvent);
 
         PaymentExecutionResult res = tossPaymentService.execute(command).block();
-        log.info("============================================");
-        log.info(res.getOrderId());
+
 
         //결제 승인 결과 따른 저장
         PaymentStatusUpdateCommand paymentStatusUpdateCommand
@@ -62,6 +76,7 @@ public class PaymentConfirmService {
                 .failure(res.getFailure())
                 .build();
 
+        //결제 상태 업데이트, psprawdata 저장
         updatePaymentStatus(paymentStatusUpdateCommand);
 
         PaymentConfirmResult confirmResult = PaymentConfirmResult.builder()
@@ -127,18 +142,19 @@ public class PaymentConfirmService {
     }
 
 
-    public static void updatePaymentOrderStatus(List<PaymentOrder> paymentOrders) {
-        paymentOrders.stream().forEach(paymentOrder -> {
-            if(paymentOrder.getPaymentOrderStatus() == PaymentOrderStatus.NOT_STARTED ||
-                    paymentOrder.getPaymentOrderStatus() == PaymentOrderStatus.EXECUTING){
-                paymentOrder.setPaymentStatus(PaymentOrderStatus.EXECUTING);
-            }else  if(paymentOrder.getPaymentOrderStatus() == PaymentOrderStatus.SUCCESS) {
-                throw new PaymentAlreadyException(ExceptionCode.PAYMENT_ALREADY_COMPLETE);
-            } else if(paymentOrder.getPaymentOrderStatus() == PaymentOrderStatus.FAILURE){
-                throw new PaymentAlreadyException(ExceptionCode.PAYMENT_ALREADY_FAIL);
-            }
-        });
-    }
+//    @Transactional(propagation = Propagation.REQUIRES_NEW)
+//    public  void updatePaymentOrderStatus(List<PaymentOrder> paymentOrders) {
+//        paymentOrders.stream().forEach(paymentOrder -> {
+//            if(paymentOrder.getPaymentOrderStatus() == PaymentOrderStatus.NOT_STARTED ||
+//                    paymentOrder.getPaymentOrderStatus() == PaymentOrderStatus.EXECUTING){
+//                paymentOrder.setPaymentStatus(PaymentOrderStatus.EXECUTING);
+//            }else  if(paymentOrder.getPaymentOrderStatus() == PaymentOrderStatus.SUCCESS) {
+//                throw new PaymentAlreadyException(ExceptionCode.PAYMENT_ALREADY_COMPLETE);
+//            } else if(paymentOrder.getPaymentOrderStatus() == PaymentOrderStatus.FAILURE){
+//                throw new PaymentAlreadyException(ExceptionCode.PAYMENT_ALREADY_FAIL);
+//            }
+//        });
+//    }
 
 
 }

@@ -6,6 +6,7 @@ import com.project.shop.payment.dto.request.TossPaymentConfirmRequest;
 import com.project.shop.payment.dto.response.ApiResponse;
 import com.project.shop.payment.dto.response.PaymentConfirmResult;
 import com.project.shop.payment.service.CheckoutService;
+import com.project.shop.payment.service.PaymentConfirmFacade;
 import com.project.shop.payment.service.PaymentConfirmService;
 import com.project.shop.payment.service.TossPaymentService;
 import lombok.RequiredArgsConstructor;
@@ -24,10 +25,11 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/payments")
 public class PaymentController {
 
-    private final TossPaymentService tossPaymentService;
     private final CheckoutService checkoutService;
 
-    private final PaymentConfirmService confirmService;
+  //  private final PaymentConfirmService confirmService;
+
+    private final PaymentConfirmFacade paymentConfirmFacade;
 
 
     @PostMapping("/checkout")
@@ -46,7 +48,9 @@ public class PaymentController {
                request.getAmount()
        );
 
-        PaymentConfirmResult confirm = confirmService.confirm(paymentConfirmCommand);
+        //PaymentConfirmResult confirm = confirmService.confirm(paymentConfirmCommand);
+        PaymentConfirmResult confirm = paymentConfirmFacade.confirmPayment(paymentConfirmCommand);
+
 
         return ResponseEntity.ok().body(new ApiResponse<>("success", HttpStatus.OK, confirm));
     }

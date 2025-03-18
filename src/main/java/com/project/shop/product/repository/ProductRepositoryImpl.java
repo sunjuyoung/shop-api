@@ -150,7 +150,7 @@ public class ProductRepositoryImpl implements CustomProductRepository{
                                 product.price,
                                 product.discountRate,
                                 product.description,
-                                images.fileName,
+                                images.fileName.max(),
                                 productCommentCount.commentCount,
                                 productLikeCount.likeCount,
                                 category.name,
@@ -170,6 +170,7 @@ public class ProductRepositoryImpl implements CustomProductRepository{
                         priceRange(condition.getPriceRange())
                 );
         orderByPricev2(condition,query);
+        query.groupBy(product.id);
 
         return query.fetch();
 

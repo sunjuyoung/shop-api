@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 public enum PaymentMethod {
 
-    //결제 방법, 카드,간편결제,휴대폰결제
+    //결제 방법, 카드결제 ,간편결제 ,휴대폰결제
     CARD("카드"),
     EASY_PAY("간편결제");
 
