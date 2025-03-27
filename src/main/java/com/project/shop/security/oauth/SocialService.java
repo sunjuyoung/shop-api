@@ -5,19 +5,24 @@ import com.project.shop.customer.entity.Customer;
 import com.project.shop.customer.entity.enums.Grade;
 import com.project.shop.customer.entity.enums.Roles;
 import com.project.shop.customer.repository.CustomerRepository;
+import io.netty.channel.ChannelOption;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.*;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
+import reactor.netty.http.client.HttpClient;
 
+import java.time.Duration;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -28,6 +33,10 @@ public class SocialService {
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${oauth.naver.client.id}")
+    private String naverClientId;
+    @Value("${oauth.naver.client.secret}")
+    private String naverClientSecret;
 
 
     public AuthDTO getNaverMember(String code) {
@@ -41,34 +50,35 @@ public class SocialService {
 
     private String getAccessTokenByCode(String authCode) {
         String tokenUrl = "https://nid.naver.com/oauth2.0/token";
-        String client_id = "eofeAB8OANaCohB5ikzw";
-        String client_secret = "Xsiso7IR7s";
+        String client_id = naverClientId;
+        String client_secret = naverClientSecret;
         String grant_type = "authorization_code";
         String code = authCode;
 
 
 
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-type","application/x-www-form-urlencoded;charset=utf-8");
-
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-
-        UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(tokenUrl)
-                .queryParam("client_id",client_id)
-                .queryParam("client_secret",client_secret)
-                .queryParam("grant_type",grant_type)
-                .queryParam("code",code)
+        WebClient webClient = WebClient.builder()
+                .baseUrl("https://nid.naver.com")
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .clientConnector(new ReactorClientHttpConnector(
+                        HttpClient.create()
+                                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000) // 5초 연결 타임아웃
+                                .responseTimeout(Duration.ofSeconds(5)) // 5초 응답 타임아웃
+                ))
                 .build();
 
-        ResponseEntity<LinkedHashMap> response =
-                restTemplate.exchange(uriComponents.toUriString(), HttpMethod.GET,entity,LinkedHashMap.class);
-
-        LinkedHashMap<String,LinkedHashMap> bodyMap = response.getBody();
-
-        String accessToken = String.valueOf(bodyMap.get("access_token"));
-
-        return accessToken;
+        return webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/oauth2.0/token")
+                        .queryParam("client_id", client_id)
+                        .queryParam("client_secret", client_secret)
+                        .queryParam("grant_type", grant_type)
+                        .queryParam("code", authCode)
+                        .build())
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                .map(response -> String.valueOf(response.get("access_token")))
+                .block(); // 동기 처리
 
     }
 
@@ -140,5 +150,38 @@ public class SocialService {
 
         customer.addRoles(Roles.CUSTOMER);
         return customer;
+    }
+
+    public AuthDTO getGoogleMember(String accessToken) {
+
+        WebClient webClient = WebClient.builder()
+                .baseUrl("https://www.googleapis.com")
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .clientConnector(new ReactorClientHttpConnector(
+                        HttpClient.create()
+                                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000) // 5초 연결 타임아웃
+                                .responseTimeout(Duration.ofSeconds(5)) // 5초 응답 타임아웃
+                ))
+                .build();
+
+      return  webClient.get()
+                // header 추가 하기  ("Authorization", "Bearer " + accessToken);
+
+                .uri(uriBuilder -> uriBuilder
+                        .path("/oauth2/v3/userinfo")
+                        .queryParam("id_token", accessToken)
+                        .build())
+                .header("Authorization", "Bearer " + accessToken)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                //log
+
+                .map(response -> {
+                    String email = String.valueOf(response.get("email"));
+                    AuthDTO authDTO = getMemberDTO(email);
+                    return authDTO;
+                })
+                .block(); // 동기 처리
+
     }
 }

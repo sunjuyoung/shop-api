@@ -4,11 +4,14 @@ server:
 
 
 spring:
+
+
+  #같은 네트워크 내에서는 컨테이너의 내부 포트를 사용해야 하므로, 3306
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3777/shop
+    url: jdbc:mysql://localhost:3377/shop?allowPublicKeyRetrieval=true
     username: root
-    password: rnrdj123
+    password:
 
 
   data:
@@ -35,7 +38,7 @@ spring:
       s3:
         bucket: ${AWS_BUCKET}
       region:
-        static: ap-northeast-2
+        static: ${AWS_REGION}
       stack:
         auto: false
 
@@ -57,3 +60,8 @@ logging:
   level:
     org.hibernate.SQL: debug
     org.springframework.cache: trace
+
+
+endpoints:
+  sun-shop-product-service:
+    url: http://127.0.0.1:9090
