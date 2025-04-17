@@ -31,7 +31,7 @@ public class OutboxEventPublisher {
 
        // applicationEventPublisher.publishEvent(OutboxEvent.of(outbox));
 
-        applicationEventPublisher.publishEvent(      Event.of(
+        applicationEventPublisher.publishEvent(Event.of(
                 eventIdSnowflake.nextId(), type, payload
         ));
     }

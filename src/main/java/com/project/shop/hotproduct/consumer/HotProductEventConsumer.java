@@ -10,9 +10,9 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 
-@Slf4j
-@Component
-@RequiredArgsConstructor
+//@Slf4j
+//@Component
+//@RequiredArgsConstructor
 public class HotProductEventConsumer {
 
 //    private final HotProductService hotProductService;

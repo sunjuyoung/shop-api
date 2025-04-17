@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Mono;
 
 @Slf4j
 @RestController
@@ -27,36 +26,32 @@ public class PaymentController {
 
     private final CheckoutService checkoutService;
 
-  //  private final PaymentConfirmService confirmService;
+    // private final PaymentConfirmService confirmService;
 
     private final PaymentConfirmFacade paymentConfirmFacade;
 
-
     @PostMapping("/checkout")
-    public ResponseEntity<ApiResponse<Long>> checkout(@RequestBody CheckoutRequest checkoutRequest){
+    public ResponseEntity<ApiResponse<Long>> checkout(@RequestBody CheckoutRequest checkoutRequest) {
         Long checkout = checkoutService.checkout(checkoutRequest);
         return ResponseEntity.ok().body(new ApiResponse<>("success", HttpStatus.OK, checkout));
     }
 
-
-
     @RequestMapping("/confirm")
-     public ResponseEntity<ApiResponse<PaymentConfirmResult>> confirmPayment(@RequestBody TossPaymentConfirmRequest request) {
-      PaymentConfirmCommand paymentConfirmCommand = new PaymentConfirmCommand(
-               request.getPaymentKey(),
-               request.getOrderId(),
-               request.getAmount()
-       );
+    public ResponseEntity<ApiResponse<PaymentConfirmResult>> confirmPayment(
+            @RequestBody TossPaymentConfirmRequest request) {
 
-        //PaymentConfirmResult confirm = confirmService.confirm(paymentConfirmCommand);
+        PaymentConfirmCommand paymentConfirmCommand = new PaymentConfirmCommand(
+
+                request.getPaymentKey(),
+                request.getOrderId(),
+                request.getAmount()
+
+        );
+
+        // PaymentConfirmResult confirm = confirmService.confirm(paymentConfirmCommand);
         PaymentConfirmResult confirm = paymentConfirmFacade.confirmPayment(paymentConfirmCommand);
-
 
         return ResponseEntity.ok().body(new ApiResponse<>("success", HttpStatus.OK, confirm));
     }
-
-
-
-
 
 }

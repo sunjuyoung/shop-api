@@ -18,31 +18,20 @@ public class HotProductScoreUpdater {
 
     private final HotProductListRepository hotProductListRepository;
     private final HotProductScoreCalculator hotProductScoreCalculator;
-    private final ProductCreatedTimeCache productCreatedTimeRepository;
 
     private static final long HOT_PRODUCT_COUNT = 10;
     private static final Duration HOT_PRODUCT_TTL = Duration.ofDays(2);
 
 
     public void update(Event<EventPayload> event, EventHandler<EventPayload> eventHandler) {
-
         Long productId = eventHandler.findProductId(event);
 
-        //생성시간 확인
-        //LocalDateTime createdTime = productCreatedTimeRepository.read(productId);
 
-//        if(!isArticleCreatedToday(createdTime)){
-//            return;
-//        }
-
+        //댓글 수 저장
         eventHandler.handle(event);
-
-
 
         //점수 계산
         long score = hotProductScoreCalculator.calculate(productId);
-
-
         //점수 업데이트
         hotProductListRepository.add(
                 productId,
